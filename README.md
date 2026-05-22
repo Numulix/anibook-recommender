@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Anibook Recommender
 
-## Getting Started
+Find books that match the anime you love. Pick an anime and Anibook surfaces a
+scored list of book recommendations matched by **semantic similarity** — using
+OpenAI embeddings and pgvector cosine search over a curated book catalog. No
+account, no friction; purely a discovery tool.
 
-First, run the development server:
+![Anibook homepage](docs/images/Homepage.png)
+
+## How it works
+
+- **Anime data** is pulled from **AniList** (the anchor source) and enriched with
+  the **MyAnimeList** community rating, then cached in Supabase.
+- **Books** come from a curated [Open Library](https://openlibrary.org) catalog,
+  each embedded once with `text-embedding-3-small` into a 1536-dim vector.
+- **Recommendations** embed the anime's synopsis + genres at request time and run
+  a pgvector cosine-similarity query against the book catalog.
+
+## Tech stack
+
+| Concern        | Choice                                             |
+| -------------- | -------------------------------------------------- |
+| Framework      | Next.js 16 (App Router, TypeScript)                |
+| Styling        | Tailwind CSS v4                                     |
+| Database       | Supabase (Postgres + pgvector)                     |
+| Embeddings     | OpenAI `text-embedding-3-small`                    |
+| Anime sources  | AniList GraphQL + MyAnimeList REST                 |
+| Book source    | Open Library Search/Subjects API                  |
+| Tests          | Vitest                                             |
+| Hosting        | Vercel (planned)                                   |
+
+## Status
+
+Early, actively built. Working today:
+
+- ✅ Trending homepage (source-split carousels from MAL + AniList, 6h cached)
+- ✅ Anime data layer + `/api/anime/[id]` (merged AniList/MAL, cached)
+- ✅ Book catalog seeding pipeline (filtering, embedding, idempotent upsert)
+
+In progress: anime detail page, anime search, and the book recommendations view.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- The [Supabase CLI](https://supabase.com/docs/guides/cli) and a Docker daemon
+  (e.g. [OrbStack](https://orbstack.dev) or Docker Desktop) for local Postgres
+- An OpenAI API key, and a [MyAnimeList API client ID](https://myanimelist.net/apiconfig)
+
+### Setup
 
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start local Supabase (Postgres + pgvector) and apply migrations
+npx supabase start
+npx supabase migration up
+
+# 3. Configure environment
+cp .env.example .env.local
+# Fill in .env.local:
+#   - Supabase URL + keys from `npx supabase status`
+#   - OPENAI_API_KEY
+#   - MAL_CLIENT_ID
+
+# 4. Seed the book catalog (start small to verify the pipeline)
+npm run seed -- --limit=25
+
+# 5. Run the app
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script                       | Description                                  |
+| ---------------------------- | -------------------------------------------- |
+| `npm run dev`                | Start the dev server                         |
+| `npm run build`              | Production build                             |
+| `npm run start`              | Serve the production build                   |
+| `npm run lint`               | Run ESLint                                   |
+| `npm test`                   | Run Vitest in watch mode                     |
+| `npm run test:run`           | Run the test suite once                      |
+| `npm run seed -- --limit=N`  | Seed/refresh the book catalog (idempotent)   |
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/            # App Router routes (homepage, /api/anime/*)
+  components/     # Shared UI (AnimeCard, brand icons)
+  lib/
+    anime/        # AniList/MAL clients, merge + trending logic, Supabase cache
+    seed/         # Book catalog filtering + embedding pipeline
+scripts/          # One-off scripts (book seeding)
+supabase/         # Migrations and local config
+docs/             # Project docs and images
+```
