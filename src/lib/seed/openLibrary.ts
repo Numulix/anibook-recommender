@@ -1,6 +1,6 @@
 import type { RawOpenLibraryBook } from "./filterBook";
 
-const UA = "anibook-recommender/0.1 (hobby project; contact: jbabic999@gmail.com)";
+const UA = "anibook-recommender/0.1 (jbabic999@gmail.com)";
 const SEARCH_FIELDS = ["key", "title", "author_name", "first_publish_year", "subject", "language", "cover_i"].join(",");
 
 export type SearchDoc = {
