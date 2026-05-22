@@ -1,7 +1,7 @@
 ---
 id: "003"
 title: "Anime data layer"
-status: ready-for-human
+status: done
 type: HITL
 ---
 
