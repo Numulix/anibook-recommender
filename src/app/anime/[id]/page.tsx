@@ -3,6 +3,7 @@ import { getAnime } from "@/lib/anime/service";
 import { formatAnilistRating, formatMalRating, formatStudiosYear } from "@/lib/anime/detail";
 import { MalIcon, AniListIcon } from "@/components/icons";
 import { Synopsis } from "@/components/Synopsis";
+import { BookRecommendations } from "@/components/BookRecommendations";
 
 // The detail page reads the (possibly background-refreshed) Supabase cache, so
 // it must not be statically cached — same policy as the homepage.
@@ -95,10 +96,7 @@ export default async function AnimeDetailPage({ params }: { params: Promise<{ id
 
       <section>
         <h2 className="mb-4 text-lg font-bold">Books like this</h2>
-        {/* Placeholder — the recommendations list is wired up in #007. */}
-        <div className="rounded-lg border border-dashed border-white/10 bg-white/5 p-8 text-center text-sm text-zinc-500">
-          Book recommendations are coming soon.
-        </div>
+        <BookRecommendations key={anime.anilistId} animeId={anime.anilistId} />
       </section>
     </main>
   );

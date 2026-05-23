@@ -14,7 +14,10 @@ account, no friction; purely a discovery tool.
 - **Books** come from a curated [Open Library](https://openlibrary.org) catalog,
   each embedded once with `text-embedding-3-small` into a 1536-dim vector.
 - **Recommendations** embed the anime's synopsis + genres at request time and run
-  a pgvector cosine-similarity query against the book catalog.
+  a pgvector cosine-similarity query against the book catalog. Matches at or above
+  50% similarity are shown as scored cards; when fewer than three clear the bar,
+  the closest near-misses fill in as clearly-labelled "loosely related" reads. The
+  result is cached per anime, so the embedding call happens only once per title.
 
 ## Tech stack
 
@@ -31,13 +34,13 @@ account, no friction; purely a discovery tool.
 
 ## Status
 
-Early, actively built. Working today:
+**v1 complete.** Working today:
 
 - ✅ Trending homepage (source-split carousels from MAL + AniList, 6h cached)
-- ✅ Anime data layer + `/api/anime/[id]` (merged AniList/MAL, cached)
+- ✅ Global search bar (debounced live AniList search with autocomplete)
+- ✅ Anime detail page + `/api/anime/[id]` (merged AniList/MAL, cached)
 - ✅ Book catalog seeding pipeline (filtering, embedding, idempotent upsert)
-
-In progress: anime detail page, anime search, and the book recommendations view.
+- ✅ Book recommendations (`/api/recommendations/[animeId]`, threshold + fallbacks, cached per anime)
 
 ## Getting started
 
@@ -90,10 +93,13 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 ```
 src/
-  app/            # App Router routes (homepage, /api/anime/*)
-  components/     # Shared UI (AnimeCard, brand icons)
+  app/
+    anime/[id]/   # Anime detail page (hero, ratings, recommendations)
+    api/          # Route handlers (anime, anime search, recommendations)
+  components/     # Shared UI (AnimeCard, SearchBar, BookRecommendations, icons)
   lib/
     anime/        # AniList/MAL clients, merge + trending logic, Supabase cache
+    recommendations/  # Embedding input, similarity query, selection rule, cache
     seed/         # Book catalog filtering + embedding pipeline
 scripts/          # One-off scripts (book seeding)
 supabase/         # Migrations and local config
