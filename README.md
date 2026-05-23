@@ -5,7 +5,7 @@ scored list of book recommendations matched by **semantic similarity** — using
 OpenAI embeddings and pgvector cosine search over a curated book catalog. No
 account, no friction; purely a discovery tool.
 
-![Anibook homepage](docs/images/Homepage.png)
+![Anibook Demo](docs/images/demo.mp4)
 
 ## How it works
 
