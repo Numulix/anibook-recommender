@@ -5,8 +5,6 @@ scored list of book recommendations matched by **semantic similarity** — using
 OpenAI embeddings and pgvector cosine search over a curated book catalog. No
 account, no friction; purely a discovery tool.
 
-![Anibook Demo](docs/images/demo.mp4)
-
 ## How it works
 
 - **Anime data** is pulled from **AniList** (the anchor source) and enriched with
